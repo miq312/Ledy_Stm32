@@ -8,10 +8,14 @@ This project demonstrates a system for controlling LED animations and button int
 - [Features](#features)
 - [Hardware Requirements](#hardware-requirements)
 - [Software Requirements](#software-requirements)
-- 
+  
 ## Overview
 
 The project utilizes the STM32 HAL library to control a series of LEDs and handle button presses. The LEDs can display different animations, and the behavior can be modified using the buttons.
+
+<p align="center">
+  <img src="https://github.com/miq312/Ledy_Stm32/blob/main/img/zdj1.jpg">
+</p>
 
 ## Features
 
@@ -29,6 +33,10 @@ The project utilizes the STM32 HAL library to control a series of LEDs and handl
 - STM32 microcontroller (e.g., STM32F4 series)
 - LEDs connected to GPIO pins
 - Buttons connected to GPIO pins
+  
+<p align="center">
+  <img src="https://github.com/miq312/Ledy_Stm32/blob/main/img/zdj2.jpg">
+</p>
 
 ## Software Requirements
 
