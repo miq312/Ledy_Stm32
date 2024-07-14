@@ -90,8 +90,10 @@ typedef enum {
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+RNG_HandleTypeDef hrng;
 
 /* USER CODE BEGIN PV */
+static int led = 0;
 
 static const pin_port_t ld[] = {
 		{ ld1_GPIO_Port, ld1_Pin },
@@ -115,14 +117,19 @@ static int intervalLevel = TRANSITION_INITIAL_LEVEL;
 static mode_t mode = MODE_MANUAL;
 
 static transition_t transition = TRANSITION_SIMPLE;
+
+static uint32_t randResult = 0;
+static int rainAnimationStage;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_RNG_Init(void);
 /* USER CODE BEGIN PFP */
 void ld_set(int led, bool turn_on);
 void ld_toogle();
+int randLED();
 void checkButtonsEvents();
 void animate(bool force);
 void longPressBackward();
@@ -132,6 +139,13 @@ void pressBackward();
 void pressForward();
 void changeTransition();
 void simpleTransitionAnimation();
+void bounceAnimation();
+void toggleSimpleAnimation();
+void bounceToggleAnimation();
+void twocolorsAnimation();
+void crossroadsAnimation();
+void noiseAnimation();
+void raindropsAnimation();
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -146,6 +160,11 @@ void ld_set(int led, bool turn_on)
 		HAL_GPIO_WritePin(ld[led].port, ld[led].pin, state);
 }
 
+void leds_clear()
+{
+	for(int i = 0; i < LEDS_COUNT; ++i)
+		ld_set(i, false);
+}
 
 //Przycisk
 static button_t buttons[]= {
@@ -203,8 +222,8 @@ void checkButtonsEvents()
 }
 
 //Tryby pracy
-static const transition_handler_t animations[TRANSITIONS_COUNT] = {simpleTransitionAnimation};/*, bounceAnimation, toggleSimpleAnimation, bounceToggleAnimation,
-		                                                           twocolorsAnimation, crossroadsAnimation, noiseAnimation, raindropsAnimation};*/
+static const transition_handler_t animations[TRANSITIONS_COUNT] = {simpleTransitionAnimation, bounceAnimation, toggleSimpleAnimation, bounceToggleAnimation,
+		                                                           twocolorsAnimation, crossroadsAnimation, noiseAnimation, raindropsAnimation};
 
 void animate(bool force)
 {
@@ -269,9 +288,24 @@ void changeMode()
 
 void changeTransition()
 {
+	if(mode != MODE_MANUAL){
+		transitionTimer = HAL_GetTick();
+		leds_clear();
+		led = 0;
+		direction = FORWARD;
+	}
 
+	if(++transition >= TRANSITIONS_COUNT)
+		transition = TRANSITION_SIMPLE;
 }
-int led = 0;
+
+//Animacje
+int randLED()
+{
+	HAL_RNG_GenerateRandomNumber(&hrng, &randResult);
+	return randResult % LEDS_COUNT;
+}
+
 void simpleTransitionAnimation()
 {
 
@@ -284,6 +318,117 @@ void simpleTransitionAnimation()
 		led -= LEDS_COUNT;
 
 	ld_set(led, true);
+}
+
+void bounceAnimation()
+{
+	ld_set(led, false);
+
+	led += direction;
+	if(direction == BACKWARD && led < 0)
+	{
+		led = -led;
+		direction = FORWARD;
+	}
+	else if(direction == FORWARD && led >= LEDS_COUNT)
+	{
+		led = led - LEDS_COUNT + 1;
+		led = LEDS_COUNT - led - 1;
+		direction = BACKWARD;
+	}
+
+	ld_set(led, true);
+}
+
+void led_toggle(int led)
+{
+	if (led >= 0 && led < LEDS_COUNT)
+		HAL_GPIO_TogglePin(ld[led].port, ld[led].pin);
+}
+
+void toggleSimpleAnimation()
+{
+	led_toggle(led);
+
+	led += direction;
+	if(direction == BACKWARD && led < 0)
+		led += LEDS_COUNT;
+	else if(direction == FORWARD && led >= LEDS_COUNT)
+		led -= LEDS_COUNT;
+}
+
+void bounceToggleAnimation()
+{
+	led_toggle(led);
+
+	led += direction;
+	if(direction == BACKWARD && led < 0){
+		led = -led-1;
+		direction = FORWARD;
+	}
+	else if(direction == FORWARD && led >= LEDS_COUNT){
+		led = led - LEDS_COUNT + 1;
+		led = LEDS_COUNT - led ;
+		direction = BACKWARD;
+	}
+}
+
+void twocolorsAnimation()
+{
+	for (int i = 0; i < LEDS_COUNT/2; ++i)
+		ld_set(i*2+led, false);
+
+	led ^= 1;
+
+	for (int i = 0; i < LEDS_COUNT/2; ++i)
+		ld_set(i*2+led, true);
+}
+
+void crossroadsAnimation()
+{
+	ld_set(led, false);
+	ld_set(LEDS_COUNT - led - 1, false);
+
+	led += direction;
+	if(direction == BACKWARD && led < 0)
+		led += LEDS_COUNT;
+	else if(direction == FORWARD && led >= LEDS_COUNT)
+		led -= LEDS_COUNT;
+
+	ld_set(led, true);
+	ld_set(LEDS_COUNT - led - 1, true);
+}
+
+void noiseAnimation(){
+
+	ld_set(led, false);
+
+	led = randLED();
+
+	ld_set(led, true);
+}
+
+void raindropsAnimation() {
+	if(rainAnimationStage == 0) {
+		led = randLED();
+		ld_set(led, true);
+	} else if(rainAnimationStage == 1) {
+		ld_set(led - 1, true);
+		ld_set(led + 1, true);
+	} else if(rainAnimationStage == 2) {
+		ld_set(led, false);
+		ld_set(led - 2, true);
+		ld_set(led + 2, true);
+	} else if(rainAnimationStage == 3) {
+		ld_set(led - 1, false);
+		ld_set(led + 1, false);
+	} else if(rainAnimationStage == 4) {
+		ld_set(led - 2, false);
+		ld_set(led + 2, false);
+	}
+
+	if(++rainAnimationStage > 4)
+		rainAnimationStage = 0;
 }
 /* USER CODE END 0 */
 
@@ -315,6 +460,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_RNG_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -375,6 +521,32 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+}
+
+/**
+  * @brief RNG Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_RNG_Init(void)
+{
+
+  /* USER CODE BEGIN RNG_Init 0 */
+
+  /* USER CODE END RNG_Init 0 */
+
+  /* USER CODE BEGIN RNG_Init 1 */
+
+  /* USER CODE END RNG_Init 1 */
+  hrng.Instance = RNG;
+  if (HAL_RNG_Init(&hrng) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN RNG_Init 2 */
+
+  /* USER CODE END RNG_Init 2 */
+
 }
 
 /**
