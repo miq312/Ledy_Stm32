@@ -8,6 +8,7 @@ This project demonstrates a system for controlling LED animations and button int
 - [Features](#features)
 - [Hardware Requirements](#hardware-requirements)
 - [Software Requirements](#software-requirements)
+- [Future Improvements](#future-improvements)
   
 ## Overview
 
@@ -46,3 +47,9 @@ The project utilizes the STM32 HAL library to control a series of LEDs and handl
 - STM32CubeMX
 - STM32CubeIDE or any ARM-compatible compiler
 - HAL library for STM32
+
+## Future Improvements
+
+-New animations
+-Special libraries
+-LED control using a special remote control
