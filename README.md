@@ -33,7 +33,10 @@ The project utilizes the STM32 HAL library to control a series of LEDs and handl
 - STM32 microcontroller (e.g., STM32F4 series)
 - LEDs connected to GPIO pins
 - Buttons connected to GPIO pins
-  
+
+<p align="center">
+  <img src="https://github.com/miq312/Ledy_Stm32/blob/main/img/zdj3.png">
+</p>
 <p align="center">
   <img src="https://github.com/miq312/Ledy_Stm32/blob/main/img/zdj2.jpg">
 </p>
