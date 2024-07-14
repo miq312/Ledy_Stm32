@@ -21,8 +21,6 @@ The project utilizes the STM32 HAL library to control a series of LEDs and handl
 ## Features
 
 - Multiple LED animations
-  - Simple transition
-  - Bounce animation
 - Button handling for:
   - Changing animations
   - Switching between manual and automatic modes
@@ -31,7 +29,7 @@ The project utilizes the STM32 HAL library to control a series of LEDs and handl
 
 ## Hardware Requirements
 
-- STM32 microcontroller (e.g., STM32F4 series)
+- STM32 microcontroller
 - LEDs connected to GPIO pins
 - Buttons connected to GPIO pins
 
